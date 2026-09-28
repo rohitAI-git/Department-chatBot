@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>DCSA Helpdesk System</title>
+
+    <!-- Apply saved theme before CSS loads to avoid a flash -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('dcsa-theme') || 'minimal';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) {}
+        })();
+    </script>
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="/style.css">
+
+</head>
+
+
+<body>
+
+    <!-- ==================================================
+         MAIN APPLICATION
+    =================================================== -->
+
+    <div class="app">
+
+
+        <!-- ==================================================
+             TOP BAR
+        =================================================== -->
+
+        <header class="topbar">
+
+            <!-- Brand -->
+            <div class="brand">
+
+                <div class="brand-icon">
+                    AI
+                </div>
+
+                <div class="brand-info">
+
+                    <div class="title">
+                        DCSA AI Helpdesk System
+                    </div>
+
+                    <div class="subtitle">
+                        Department of Computer Science & Applications, Panjab University
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Header Actions -->
+            <div class="actions">
+
+                <!-- Online Status -->
+                <div class="online-status">
+
+                    <span class="online-dot"></span>
+
+                    System Online
+
+                </div>
+
+
+                <!-- System Theme -->
+                <label
+                    class="theme-select"
+                    aria-label="System theme"
+                >
+
+                    <select id="themeSelect">
+
+                        <option value="minimal">
+                            Minimal
+                        </option>
+
+                        <option value="modern">
+                            Modern
+                        </option>
+
+                        <option value="formal">
+                            Formal
+                        </option>
+
+                    </select>
+
+                </label>
+
+
+                <!-- Settings -->
+                <a
+                    class="btn"
+                    href="/settings"
+                    target="_blank"
+                >
+                    System Settings
+                </a>
+
+
+                <!-- Reset -->
+                <button
+                    class="btn danger"
+                    id="resetBtn"
+                    type="button"
+                >
+                    Reset Chat
+                </button>
+
+            </div>
+
+        </header>
+
+
+
+        <!-- ==================================================
+             CHAT AREA
+        =================================================== -->
+
+        <main
+            id="chat"
+            class="chat"
+        >
+
+        </main>
+
+
+
+        <!-- ==================================================
+             MESSAGE TEMPLATE
+        =================================================== -->
+
+        <template id="msgTpl">
+
+            <div class="msg">
+
+                <!-- Avatar -->
+                <div class="avatar"></div>
+
+
+                <!-- Message Content -->
+                <div class="message-content">
+
+                    <!-- Sender -->
+                    <div class="sender"></div>
+
+
+                    <!-- Bubble -->
+                    <div class="bubble">
+
+                        <!-- Actual message -->
+                        <div class="text"></div>
+
+
+                        <!-- Sources Button -->
+                        <button
+                            class="srcToggle"
+                            type="button"
+                            hidden
+                        >
+                            Sources
+                        </button>
+
+
+                        <!-- Sources -->
+                        <div
+                            class="sources"
+                            hidden
+                        ></div>
+
+
+                        <!-- Response Time -->
+                        <div class="meta"></div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </template>
+
+
+
+        <!-- ==================================================
+             MESSAGE COMPOSER
+        =================================================== -->
+
+        <footer class="composer">
+
+            <form
+                id="composer"
+                autocomplete="off"
+            >
+
+                <!-- Input Area -->
+                <div class="input-container">
+
+                    <input
+                        id="q"
+                        type="text"
+                        placeholder="Ask about DCSA courses, faculty, fees, exams..."
+                        required
+                    >
+
+                </div>
+
+
+                <!-- Send Button -->
+                <button
+                    type="submit"
+                    id="sendBtn"
+                    class="send-btn"
+                >
+
+                    <span>
+                        Send
+                    </span>
+
+                    <span class="send-icon">
+                        ➤
+                    </span>
+
+                </button>
+
+            </form>
+
+
+            <!-- Small footer information -->
+            <div class="composer-note">
+
+                <span>
+                    DCSA AI Helpdesk System - Built by Varun, Rohit, Janvi, Harsimran of M.Sc. Computer Science, Batch 26-28, DCSA, PU 
+                </span>
+
+                <span>
+                    Answers from official sources
+                </span>
+
+            </div>
+
+        </footer>
+
+    </div>
+
+
+
+    <!-- ==================================================
+         JAVASCRIPT
+         
+         JavaScript intentionally remains inside
+         index.html as requested.
+    =================================================== -->
+
+    <script>
+
+        /* ==================================================
+           ELEMENT REFERENCES
+        =================================================== */
+
+        const chat =
+            document.getElementById('chat');
+
+        const tpl =
+            document.getElementById('msgTpl');
+
+        const form =
+            document.getElementById('composer');
+
+        const input =
+            document.getElementById('q');
+
+        const sendBtn =
+            document.getElementById('sendBtn');
+
+        const resetBtn =
+            document.getElementById('resetBtn');
+
+
+
+        /* ==================================================
+           SYSTEM THEME
+        =================================================== */
+
+        const themeSelect =
+            document.getElementById('themeSelect');
+
+        const rootEl =
+            document.documentElement;
+
+
+        /* Sync the dropdown with the theme already applied
+           by the inline script in <head> */
+
+        const initialTheme =
+            rootEl.getAttribute('data-theme') || 'minimal';
+
+
+        if (themeSelect) {
+
+            themeSelect.value =
+                initialTheme;
+
+
+            themeSelect.addEventListener(
+                'change',
+                e => {
+
+                    const theme =
+                        e.target.value;
+
+
+                    rootEl.setAttribute(
+                        'data-theme',
+                        theme
+                    );
+
+
+                    try {
+
+                        localStorage.setItem(
+                            'dcsa-theme',
+                            theme
+                        );
+
+                    }
+
+                    catch (err) {}
+
+                }
+            );
+
+        }
+
+
+
+        /* ==================================================
+           INITIAL MESSAGE
+        =================================================== */
+
+        window.addEventListener('load', () => {
+
+            chat.innerHTML = '';
+
+            addMessage(
+                'bot',
+                "Hi, I'm DCSA's Helpdesk AI System. You can ask me about courses, faculty, fees, exams, notices, contacts — I'll answer from the official DCSA sources and happily help :)"
+            );
+
+        });
+
+
+
+        /* ==================================================
+           ADD MESSAGE
+        =================================================== */
+
+        function addMessage(
+            role,
+            text,
+            sources,
+            latency
+        ) {
+
+            /* Clone message template */
+
+            const node =
+                tpl.content.firstElementChild.cloneNode(true);
+
+
+            /* Add role */
+
+            node.classList.add(role);
+
+
+            /* ==================================================
+               AVATAR
+            ================================================== */
+
+            const avatar =
+                node.querySelector('.avatar');
+
+
+            if (role === 'bot') {
+
+                avatar.textContent = 'AI';
+
+            } else {
+
+                avatar.textContent = 'YOU';
+
+            }
+
+
+
+            /* ==================================================
+               SENDER NAME
+            ================================================== */
+
+            const sender =
+                node.querySelector('.sender');
+
+
+            if (role === 'bot') {
+
+                sender.textContent =
+                    'DCSA AI Assistant';
+
+            } else {
+
+                sender.textContent =
+                    'You';
+
+            }
+
+
+
+            /* ==================================================
+               MESSAGE TEXT
+            ================================================== */
+
+            node.querySelector('.text').textContent =
+                text;
+
+
+
+            /* ==================================================
+               LATENCY
+            ================================================== */
+
+            const meta =
+                node.querySelector('.meta');
+
+
+            if (latency != null) {
+
+                meta.textContent =
+                    (latency / 1000).toFixed(1) + 's';
+
+            }
+
+
+
+            /* ==================================================
+               SOURCES
+            ================================================== */
+
+            const srcToggle =
+                node.querySelector('.srcToggle');
+
+            const srcBox =
+                node.querySelector('.sources');
+
+
+            if (
+                sources &&
+                sources.length
+            ) {
+
+                srcToggle.hidden = false;
+
+
+                const ul =
+                    document.createElement('ul');
+
+
+                for (const s of sources) {
+
+                    const li =
+                        document.createElement('li');
+
+
+                    const a =
+                        document.createElement('a');
+
+
+                    /* Source URL */
+
+                    a.href = s.url;
+
+                    a.target = '_blank';
+
+                    a.rel = 'noopener noreferrer';
+
+
+                    /* Source title */
+
+                    a.textContent =
+                        s.title || s.url;
+
+
+                    li.appendChild(a);
+
+
+
+                    /* ==================================================
+                       LAST CHECKED
+                    ================================================== */
+
+                    if (s.lastchecked) {
+
+                        const d =
+                            document.createElement('span');
+
+
+                        d.className =
+                            'date';
+
+
+                        d.textContent =
+                            s.lastchecked.slice(0, 10);
+
+
+                        li.appendChild(d);
+
+                    }
+
+
+                    ul.appendChild(li);
+
+                }
+
+
+                srcBox.appendChild(ul);
+
+
+
+                /* ==================================================
+                   SOURCE TOGGLE
+                ================================================== */
+
+                srcToggle.addEventListener(
+                    'click',
+                    () => {
+
+                        srcBox.hidden =
+                            !srcBox.hidden;
+
+                        srcToggle.textContent =
+                            srcBox.hidden
+                                ? 'Sources'
+                                : 'Hide sources';
+
+                    }
+                );
+
+            }
+
+
+
+            /* ==================================================
+               ADD MESSAGE TO CHAT
+            ================================================== */
+
+            chat.appendChild(node);
+
+
+            /* Scroll to bottom */
+
+            chat.scrollTop =
+                chat.scrollHeight;
+
+
+            return node;
+
+        }
+
+
+
+        /* ==================================================
+           TYPING INDICATOR
+        =================================================== */
+
+        function addTyping() {
+
+            const node =
+                tpl.content.firstElementChild.cloneNode(true);
+
+
+            node.classList.add('bot');
+
+
+            /* Avatar */
+
+            node.querySelector('.avatar')
+                .textContent = 'AI';
+
+
+            /* Sender */
+
+            node.querySelector('.sender')
+                .textContent =
+                'DCSA AI Assistant';
+
+
+            /* Typing animation */
+
+            node.querySelector('.text').innerHTML =
+
+                '<span class="typing">' +
+
+                '<span class="typing-label">Thinking</span>' +
+
+                '<span></span>' +
+                '<span></span>' +
+                '<span></span>' +
+
+                '</span>';
+
+
+            chat.appendChild(node);
+
+
+            chat.scrollTop =
+                chat.scrollHeight;
+
+
+            return node;
+
+        }
+
+
+
+        /* ==================================================
+           SEND MESSAGE
+        =================================================== */
+
+        form.addEventListener(
+            'submit',
+            async e => {
+
+                e.preventDefault();
+
+
+                /* Get question */
+
+                const q =
+                    input.value.trim();
+
+
+                /* Don't send empty question */
+
+                if (!q) {
+                    return;
+                }
+
+
+
+                /* ==================================================
+                   SHOW USER QUERY
+                ================================================== */
+
+                addMessage(
+                    'user',
+                    q
+                );
+
+
+                /* Clear input */
+
+                input.value = '';
+
+
+                /* Disable send button */
+
+                sendBtn.disabled = true;
+
+
+
+                /* ==================================================
+                   SHOW TYPING
+                ================================================== */
+
+                const typing =
+                    addTyping();
+
+
+
+                try {
+
+                    /* ==================================================
+                       CALL BACKEND
+                    ================================================== */
+
+                    const r =
+                        await fetch(
+                            '/ask',
+                            {
+                                method: 'POST',
+
+                                headers: {
+                                    'Content-Type':
+                                        'application/json'
+                                },
+
+                                body: JSON.stringify({
+
+                                    query: q,
+
+                                    section: null
+
+                                })
+
+                            }
+                        );
+
+
+
+                    /* ==================================================
+                       HTTP ERROR
+                    ================================================== */
+
+                    if (!r.ok) {
+
+                        throw new Error(
+                            `Server returned ${r.status}`
+                        );
+
+                    }
+
+
+
+                    /* ==================================================
+                       READ RESPONSE
+                    ================================================== */
+
+                    const data =
+                        await r.json();
+
+
+
+                    /* Remove typing */
+
+                    typing.remove();
+
+
+
+                    /* ==================================================
+                       SHOW AI RESPONSE
+                    ================================================== */
+
+                    addMessage(
+
+                        'bot',
+
+                        data.answer ||
+                        '(no answer)',
+
+                        data.sources ||
+                        [],
+
+                        data.latencyms
+
+                    );
+
+                }
+
+
+                catch (err) {
+
+                    /* Remove typing */
+
+                    typing.remove();
+
+
+
+                    /* ==================================================
+                       ERROR MESSAGE
+                    ================================================== */
+
+                    addMessage(
+
+                        'bot',
+
+                        'Network error: ' +
+                        err.message
+
+                    );
+
+                }
+
+
+                finally {
+
+                    /* Enable send */
+
+                    sendBtn.disabled = false;
+
+
+                    /* Focus input */
+
+                    input.focus();
+
+                }
+
+            }
+        );
+
+
+
+        /* ==================================================
+           RESET CHAT
+        =================================================== */
+
+        resetBtn.addEventListener(
+            'click',
+            () => {
+
+                chat.innerHTML = '';
+
+
+                addMessage(
+                    'bot',
+                    'Conversation reset. Now ask me anything about DCSA.'
+                );
+
+
+                input.focus();
+
+            }
+        );
+
+
+
+        /* ==================================================
+           ENTER KEY
+           
+           Because the input is inside a form,
+           pressing Enter automatically submits it.
+        =================================================== */
+ </script>
+</body>
+
+</html>

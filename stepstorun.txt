@@ -1,0 +1,11 @@
+#DONT TO THIS - 1 - dcsachtbtvenv\Scripts\activate.bat
+
+start venv
+
+START CMD THEN typein
+
+1- python -m venv dscsvenv
+2- dcsachtbtvenv\Scripts\activate.bat
+2- python -m pip install -r otherfilez\requirements.txt
+3 - install ollama installer from otherfilez and go to cmd new windows and type ollama and then ollama pull qwen2.5:7b-instruct-q4_K_M
+4 - python applaunchr.py

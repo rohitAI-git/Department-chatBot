@@ -1,0 +1,29 @@
+{
+  "enablelatestfetch": false,
+  "model": {
+    "llm": "qwen2.5:7b-instruct-q4_K_M",
+    "llm_fallback": "qwen2.5:1.5b-instruct",
+    "llm_expand": null,
+    "embedding": "BAAI/bge-base-en-v1.5",
+    "reranker": "BAAI/bge-reranker-base",
+    "faiss_mode": "gpu",
+    "device": "cuda"
+  },
+  "retrieval": {
+    "topk_per_method": 10,
+    "final_topk": 15,
+    "max_llm_chunks": 15,
+    "rrf_k": 40,
+    "date_half_life_days": 120,
+    "conf_floor": 0.005,
+    "section_boost": 1.4,
+    "date_decay_floor": 0.1,
+    "multiquery": true
+  },
+  "generation": {
+    "temperature": 0.2,
+    "response_mode": "balanced",
+    "persona": "friendly",
+    "max_tokens": 704
+  }
+}
